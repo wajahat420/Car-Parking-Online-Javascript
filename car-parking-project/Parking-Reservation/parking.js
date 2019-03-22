@@ -121,16 +121,23 @@ function dateTimeHours(){
 }
 
 function comparingDBUserDataAndInserting(){
+    var counter  = 0;
     if (validDate){
         sendAllDataToDB = true
+        var dataSend = false;
+
+
 
         bookingTimings.on('value', function(snapshot){
+            if(!dataSend){
+            console.log("times")
             snapshot.forEach(function(childSnapshot) {
-                const item = childSnapshot.val();
 
+                const item = childSnapshot.val();
+                // console.log(childSnapshot.key)
                 var slotOfDB = item.Slot
 
-                console.log(slotOfDB)
+                // console.log("Database Slot",slotOfDB,"\n","my selected Slot",knowSlot)
 
                 const fetchingdbTime =  item.Time
                 const fetchingdbHours = item.Hours
@@ -158,8 +165,9 @@ function comparingDBUserDataAndInserting(){
                 }
 
                 //  Checking User Data and DB Data
-
+                console.log("hi")
                 if (knowSlot != slotOfDB){
+                    // console.log("not same slot")
                     checkingDBdateAndTimings = true
                 }
 
@@ -196,20 +204,52 @@ function comparingDBUserDataAndInserting(){
                         checkingDBdateAndTimings = true
                     }
                 }
-
+                // console.log("chechkingDBDateAndTimings",checkingDBdateAndTimings)
 
                 if(!checkingDBdateAndTimings){
                     sendAllDataToDB = false
-                    swal("Timing Already Reserved..","Please Change Your Timings..","warning")
                 }
-                
 
-
-
-
+    
 
             });
-        })        
+
+            // console.log()
+
+            if(sendAllDataToDB && validDate){
+                dataSend = true
+                // console.log("i have to enter data")
+                console.log("data sending in database")
+                selectHours = (document.getElementById('hours').selectedIndex) + 1
+                firebase.database().ref('booking-Slot-and-Timings').push({
+                    Email: window.localStorage.getItem('user-email'),
+                    uid: window.localStorage.getItem('user-uid'),
+                    Slot: knowSlot,
+                    Date:selectDate,
+                    Time: selectTime,
+                    Hours: selectHours
+                })
+                setTimeout(function(){
+                    swal("Successfully Booked Slot..","","success")
+                },500)
+                setTimeout(function(){
+                    window.location.assign("../Slips/slip.html")
+                },1000)
+            }
+            else{
+                console.log("data not sending in DB")
+                swal("Timing Already Reserved..","Please Change Your Timings..","warning")
+        
+            }
+
+        } // new if ends
+
+            // console.log("ho")
+            // donebtnFunction()
+            // console.log("sendAllDataInDB",sendAllDataToDB) 
+        })  
+
+ 
     }
 }
 
@@ -221,9 +261,12 @@ function selectedSlot(){
 // Sending Data to firebase 
 
 function donebtnFunction(){
-    dateTimeHours()
-    comparingDBUserDataAndInserting()
+    // dateTimeHours()
+    // comparingDBUserDataAndInserting()
+    // console.log("sendALLData",sendAllDataToDB,"\n","Valid Date",validDate)
     if(sendAllDataToDB && validDate){
+        // console.log("i have to enter data")
+        console.log("in if")
         selectHours = (document.getElementById('hours').selectedIndex) + 1
         firebase.database().ref('booking-Slot-and-Timings').push({
             Email: window.localStorage.getItem('user-email'),
@@ -233,7 +276,16 @@ function donebtnFunction(){
             Time: selectTime,
             Hours: selectHours
         })
-        swal("Successfully Booked Slot..","","success")
+        // setTimeout(function(){
+        //     swal("Successfully Booked Slot..","","success")
+        // },1000)
+        // setTimeout(function(){
+        //     window.location.assign("../Slips/slip.html")
+        // },4000)
+    }
+    else{
+        console.log("in else")
+        swal("Timing Already Reserved..","Please Change Your Timings..","warning")
 
     }
 }
